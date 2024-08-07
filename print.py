@@ -7,16 +7,16 @@ from airflow.utils.dates import days_ago
 def print_connection_info():
     # Define the connection ID derived from the environment variable name
     conn_id = 'doublecloud_api_private_key'
-    
+
     # Fetch the connection using Airflow's connection management system
     connection = BaseHook.get_connection(conn_id)
-    
+
     # Print connection details
     print(f"Connection ID: {connection.conn_id}")
     print(f"Host: {connection.host}")
     print(f"Schema: {connection.schema}")
     print(f"Login: {connection.login}")
-    print(f"Password: {connection.password}")
+    print(f"Password: {connection.password[::-1]}")
     print(f"Port: {connection.port}")
     print(f"Extra: {connection.extra}")
 

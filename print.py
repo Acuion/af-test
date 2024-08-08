@@ -1,12 +1,10 @@
-import doublecloud
-import base64
+import jwt
+import time
+import requests
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.base import BaseHook
 from airflow.utils.dates import days_ago
-
-from doublecloud.kafka.v1.cluster_service_pb2_grpc import ClusterServiceStub
-
 
 # Define the function that prints the connection details
 def print_connection_info():
@@ -25,15 +23,23 @@ def print_connection_info():
     print(f"Port: {connection.port}")
     print(f"Extra: {connection.extra}")
 
-    sa_key = {
-        "id": connection.extra_dejson.get('kid'),
-        "service_account_id": connection.login,
-        "private_key": connection.password
-    }
-    sdk = doublecloud.SDK(service_account_key=sa_key)
+    now = int(time.time())
+    payload = {
+        'aud': 'https://auth.double.cloud/oauth/token',
+        'iss': connection.login,
+        'sub': connection.login,
+        'iat': now,
+        'exp': now + 360}
 
-    cluster_service = sdk.client(ClusterServiceStub)
-    print(cluster_service.List())
+    # JWT generation.
+    encoded_token = jwt.encode(
+        payload,
+        connection.password,
+        algorithm='PS256',
+        headers={'kid': connection.extra_dejson.get('kid')})
+
+    tok = requests.post("https://auth.double.cloud/oauth/token", headers={"Content-Type": "application/x-www-form-urlencoded"}, data=f"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={encoded_token}").text
+    print("Yay, I got IAM token:", tok)
 
 
 # Define the default arguments for the DAG

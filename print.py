@@ -1,7 +1,12 @@
+import doublecloud
+import base64
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.base import BaseHook
 from airflow.utils.dates import days_ago
+
+from doublecloud.kafka.v1.cluster_service_pb2_grpc import ClusterServiceStub
+
 
 # Define the function that prints the connection details
 def print_connection_info():
@@ -16,9 +21,20 @@ def print_connection_info():
     print(f"Host: {connection.host}")
     print(f"Schema: {connection.schema}")
     print(f"Login: {connection.login}")
-    print(f"Password: {connection.password[::-1]}")
+    print(f"Password: {connection.password}")
     print(f"Port: {connection.port}")
     print(f"Extra: {connection.extra}")
+
+    sa_key = {
+        "id": connection.extra_dejson.get('kid'),
+        "service_account_id": connection.login,
+        "private_key": connection.password
+    }
+    sdk = doublecloud.SDK(service_account_key=sa_key)
+
+    cluster_service = sdk.client(ClusterServiceStub)
+    print(cluster_service.List())
+
 
 # Define the default arguments for the DAG
 default_args = {

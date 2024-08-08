@@ -37,6 +37,8 @@ def print_connection_info():
         connection.password,
         algorithm='PS256',
         headers={'kid': connection.extra_dejson.get('kid')})
+    print("kid is", connection.extra_dejson.get('kid'))
+    print("encoded token is", encoded_token)
 
     resp = requests.post("https://auth.double.cloud/oauth/token", headers={"Content-Type": "application/x-www-form-urlencoded"}, data=f"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={encoded_token}")
     print(f"Yay, I got IAM token with status {resp.status_code}: {resp.text}")

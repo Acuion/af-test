@@ -38,8 +38,8 @@ def print_connection_info():
         algorithm='PS256',
         headers={'kid': connection.extra_dejson.get('kid')})
 
-    tok = requests.post("https://auth.double.cloud/oauth/token", headers={"Content-Type": "application/x-www-form-urlencoded"}, data=f"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={encoded_token}").text
-    print("Yay, I got IAM token:", tok)
+    resp = requests.post("https://auth.double.cloud/oauth/token", headers={"Content-Type": "application/x-www-form-urlencoded"}, data=f"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={encoded_token}")
+    print(f"Yay, I got IAM token with status {resp.status_code}: {resp.text}")
 
 
 # Define the default arguments for the DAG
